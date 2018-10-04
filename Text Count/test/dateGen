@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for i in $(seq 1 9); do
+    echo $i
+    DAT="20180${i}120000"
+    #echo "some file content" > "./Month$i.txt"
+    touch -mt $DAT "./Month$i.txt"
+done
+
+for i in $(seq 10 12); do
+    echo $i
+    DAT="2017${i}120000"
+    #echo "some file content" > "./Month$i.txt"
+    touch -mt $DAT  "./Month$i.txt"
+done

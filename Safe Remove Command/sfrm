@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" = 0 ]; then
+    echo "Usage: Insert file name to safely remove the file."
+    exit
+fi
+
+for each in "$@"
+do
+    if [ -f "$each" ]; then
+	NAME=$(basename "$each")
+	if [ $(find $HOME/.trash -name "$NAME" -maxdepth 1 | wc -l | tr -dc '0-9') != 0 ]; then
+	    while [ 1 ]; do
+		echo "Cannot move $NAME; $NAME already exists in the trash"
+		read -p "New name to store under: " NAME
+		if [ $(find $HOME/.trash -name "$NAME" -maxdepth 1 | wc -l | tr -dc '0-9') = 0 ]; then
+		    break
+		fi		
+	    done
+	fi
+	mv "$each" $HOME/.trash/"$NAME"
+    else
+	echo "$each is not a ordinary file!"
+    fi
+done    
+

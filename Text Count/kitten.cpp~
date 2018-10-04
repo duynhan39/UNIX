@@ -1,0 +1,50 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(int argc, char *argv[])
+{
+  int opt, warg;
+    int opt_a = 0, opt_f = 0, opt_l = 0, opt_w = 0;
+    char *farg;
+
+    opterr = 0;
+
+    while((opt = getopt(argc, argv, "Ens")) != -1) {
+        switch(opt) {
+        case 'a':
+            opt_a = 1;
+            printf("option: %c\n", opt);
+            break;
+        case 'f':
+            opt_f = 1;
+            // f option requires a string argument.
+            farg = optarg;
+            printf("option: %c with argument %s\n", opt, farg);
+            break;
+        case 'l':
+            opt_l = 1;
+            printf("option: %c\n", opt);
+            break;
+            break;
+        case 'w':
+            opt_w = 1;
+            // w option requires a numeric argument.
+            warg = atoi(optarg);
+            printf("option: %c with argument %d\n", opt, warg);
+            break;
+        case '?':
+            printf("unknown option: %c\n", opt);
+            break;
+        }
+    }
+
+    // Anything left is an argument (not an option)
+    // getopt rearranges argv[] so that arguments are at end
+    for(; optind < argc; optind++) {
+	printf("argument: %s\n", argv[optind]);
+    }
+
+  return 0;
+}

@@ -1,0 +1,40 @@
+#!/bin/bash
+
+if [ "$#" = 0 ]; then
+    echo "Usage: Insert file name to recover the."
+    echo "Put the destination directory in the end of the arguments or leave it blank to move the files to the current directory."
+    exit
+fi
+
+for last; do true; done
+if [ -d "$last" ]; then
+    DES=./$last
+else
+    DES="."
+fi
+
+for each in "$@"
+do
+    if [ "$each" = "$last" ] && [ "$#" != 1 ] && [ -d "$each" ]; then
+	    continue
+    fi
+    if [ -f $HOME/.trash/"$each" ]; then
+	
+	NAME=$(basename "$each")
+	if [ $(find "$DES" -name "$NAME" -maxdepth 1 | wc -l | tr -dc '0-9') = 1 ]; then
+
+	     echo "$NAME already exists in the directory"
+	     read -p "Permission to overwrite: " Y
+	     if [ "$Y" != "y" ]; then
+	         continue
+	     fi
+	fi
+	mv $HOME/.trash/"$each" "$DES"
+
+    else
+	echo "Err: $each is not an ordinary file or coouldn't be found!"
+
+
+    fi
+done    
+

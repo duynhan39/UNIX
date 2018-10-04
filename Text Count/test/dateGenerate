@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for i in $(seq 1 12); do [
+    
+    echo $i;
+    echo $i;
+    echo "some file content" > "./Month$i.txt";
+    echo "hello" | cat > logfile.txt;
+
+]
+done
