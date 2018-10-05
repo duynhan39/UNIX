@@ -248,12 +248,13 @@ void dropObjects()
   }
   printPlayer();
   refresh();
-  usleep( max(SPEED*LIMIT/100, SPEED-(level)*ACC) );
+  usleep(max( GAP*LIMIT/100, sleepTime() ));
 
   level++;
 }
 
 int score() { return max(0,level)/LEVEL_SCORE + 1; }
+int sleepTime() { return level >= AC_GAP*(LIMIT-1) ? GAP/LIMIT : AC_GAP*GAP/(AC_GAP+max(0, level)) ; }  
 
 void gameOver()
 {

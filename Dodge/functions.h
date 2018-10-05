@@ -22,12 +22,12 @@
 #define SLIDE_SP 100000
 #define WID 30
 #define COLOR_RANGE 3
-#define SPEED 100000
-#define ACC 150
+#define GAP 100000
+#define AC_GAP 200
 #define LEVEL_SCORE 15
 #define NAME_LEN 12
 #define GAME_NAME "[DODGE]"
-#define LIMIT 21  // 100/LIMIT faster than original speed
+#define LIMIT 10  // Max level of speed
 #define DATA_FILE "highscores.dat"
 
 void GAME();
@@ -42,6 +42,7 @@ void dropObjects();
 void getName();
 void printLeaderBoard();
 int score();
+int sleepTime();
 void getMax();
 
 void upDateDataBase();
