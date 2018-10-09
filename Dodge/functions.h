@@ -19,35 +19,91 @@
 #include <fcntl.h>
 #include <gdbm.h>
 
+using namespace std;
+
+// Constants for Intro
+#define GAME_NAME "[DODGE]"
 #define SLIDE_SP 100000
-#define WID 30
 #define COLOR_RANGE 3
-#define GAP 100000
-#define AC_GAP 200
+
+// Common parameters
+#define GAP 100000              // (Milliseconds) Init gap between bullets/obstacles
+#define AC_GAP 200              // How fast the GAP shrinks
+#define LIMIT 10                // Max level of speed = INIT_SPEED / LIMIT = (1 / GAP) / LIMIT
+
+// Constants for PC Mode
+#define PC_WID 30
 #define LEVEL_SCORE 15
 #define NAME_LEN 12
-#define GAME_NAME "[DODGE]"
-#define LIMIT 10  // Max level of speed
 #define DATA_FILE "highscores.dat"
 
+// Constants for Human Mode
+#define HUM_HEI 15
+#define HUM_WID 50
+
+// Modes
+#define PC_MODE 1
+#define HUM_MODE 2
+
+// COLOR SECTION
+#define YELLOW 1
+#define CYAN 2
+#define GREEN 3
+#define RED 4
+#define WHITE 5
+#define MAGENTA 6
+#define BLUE 7
+
+#define GREEN_RED 8
+#define CYAN_RED 9
+
+#define BLACK_YELLOW 10
+#define BLACK_WHITE 11
+#define CYAN_BLUE 12
+#define RED_GREEN 13
+
+// MAIN FUNCTION
 void GAME();
+
+// Init Functions
+void init();
+
+// Printing function
 void greet();
-void play();
-void gameOver();
-void printBorders(int end);
+void printBorders(int end=-1,  int from=0, int color=YELLOW, bool bold=true);
 void printPlayer();
 void printScore();
-void printMess(std::string message, int loc=LINES/2);
-void dropObjects();
-void getName();
+void printMess(std::string message, int color=-1, int loc=LINES/2, bool bold=false);
 void printLeaderBoard();
+void printWinner();
+
+//void printBullets(vector<vector<int>> grid);
+
+// Getting function
+void getMode();
+void getName();
+void getMax();
 int score();
 int sleepTime();
-void getMax();
+int getWid();
+int getHei();
+bool askCont();
 
+// Games
+void playPC();
+void playHUM();
+
+// Functional functions
+void RUN();
+void gameOver();
+
+bool dropObjects();
+
+void renderBullet();
+
+// Data base
 void upDateDataBase();
 void add_to_record(GDBM_FILE db, std::string player, std::string score);
-//bool compareRec(const hsRec &a, const hsRec &b);
 void printLeaderBoard();
 
 #endif
