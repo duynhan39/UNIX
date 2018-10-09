@@ -11,6 +11,8 @@ int maxOfPlayer;
 int gameStat;
 
 vector<queue<int>> bullets(2);
+vector<int> avaiBullets(2);
+vector<int> bulletTimer(2);
 
 int MODE;
 
@@ -23,7 +25,7 @@ void GAME()
 {
     refresh();
     init();
-    greet();
+    //greet();
     
     bool cont=true;
     while(cont)
@@ -169,6 +171,24 @@ void printScore()
     refresh();
 }
 
+void printPockets()
+{
+    for(int i=0; i<2; i++)
+    {
+        avaiBullets[i] == MAX_BULLETS ? attrset(COLOR_PAIR(i+3) | A_BOLD) : attrset(COLOR_PAIR(i+3));
+        move((LINES + (1-2*i)*getHei())/2 - (1-2*i)*(MAX_BULLETS), (COLS + (1-2*i)*getWid())/2 + (1-2*i)*4 );
+        printw("-");
+        move(0,0);
+        for(int bull=0; bull<avaiBullets[i]; bull++)
+        {
+            move((LINES + (1-2*i)*getHei())/2 - (1-2*i)*bull, (COLS + (1-2*i)*getWid())/2 + (1-2*i)*4 );
+            i == 0 ? printw("A") : printw("V");
+            move(0,0);
+        }
+    }
+    refresh();
+}
+
 void printPlayer()
 {
     switch (MODE) {
@@ -176,7 +196,8 @@ void printPlayer()
             attrset(COLOR_PAIR(CYAN));
             move(LINES-1, player[0]);
             printw("@");
-            if(MODE==PC_MODE) { printScore(); }
+            /////
+            printScore();
             break;
         case HUM_MODE:
             // Player 1 (bottom)
@@ -187,12 +208,14 @@ void printPlayer()
             attrset(COLOR_PAIR(RED));
             move((LINES-getHei())/2, player[1]);
             printw("Y");
+            /////
+            printPockets();
             break;
         default:
             break;
     }
     printBorders();
-//    refresh();
+    //    refresh();
 }
 
 void printMess(string message, int color, int loc, bool bold)
@@ -289,7 +312,7 @@ bool askCont()
         else if(key == KEY_DOWN)
             choice = min(1, choice+1);
     } while(key != '\n');
-        
+    
     return choice == 0;
 }
 
@@ -303,6 +326,8 @@ void getName()
     string nameStr(name);
     playerName = nameStr;
 }
+
+int pToC(int p) { return (p == 0) ?  GREEN : RED; }
 
 int score() { return max(0,level)/LEVEL_SCORE; }
 
@@ -370,16 +395,21 @@ void playPC()
 void playHUM()
 {
     // Init game data
+    vector<queue<int>> empty(2);
+    swap(bullets, empty);
+    
+    vector<int> fullBullets(2, 10);
+    swap(avaiBullets, fullBullets);
+    
     player.clear();
     player.push_back(COLS/2);
     player.push_back(COLS/2);
     
     level = 0;
-
+    
     clear();
-//    printBorders((LINES + HUM_HEI)/2, (LINES - HUM_HEI)/2, MODE);
+    //    printBorders((LINES + HUM_HEI)/2, (LINES - HUM_HEI)/2, MODE);
     printMess("READY?", MODE);
-
     printPlayer();
     
     // Game ON!
@@ -387,7 +417,7 @@ void playHUM()
     
     clear();
     printWinner();
-//    sleep(2);
+    //    sleep(2);
 }
 
 void RUN()
@@ -424,11 +454,21 @@ void RUN()
                     player[1] = max(player[1]-1, (COLS-getWid())/2);
                     break;
                 case KEY_UP:
-                    bullets[0].push(player[0]);
+                    if(avaiBullets[0]>0) {
+                        bullets[0].push(player[0]);
+                        avaiBullets[0]--;
+                    } else {
+                        bullets[0].push(-1);
+                    }
                     bullets[1].push(-1);
                     break;
                 case 'w':
-                    bullets[1].push(player[1]);
+                    if(avaiBullets[1]>0) {
+                        bullets[1].push(player[1]);
+                        avaiBullets[1]--;
+                    } else {
+                        bullets[1].push(-1);
+                    }
                     bullets[0].push(-1);
                     break;
                 default:
@@ -437,10 +477,12 @@ void RUN()
                     break;
             }
             ///////////////
+            
             renderBullet();
         }
         key = getch();
         level++;
+        recoverBullets();
     }
     sleep(1);
 }
@@ -473,7 +515,7 @@ bool dropObjects()
     }
     refresh();
     usleep(sleepTime());
-
+    
     return gameOn;
 }
 
@@ -483,7 +525,7 @@ void renderBullet()
     for(int i=0; i<2; i++)
     {
         while(bullets[i].size() > getHei())
-              bullets[i].pop();
+            bullets[i].pop();
         
         // Marking bullet
         queue<int> temQue = bullets[i];
@@ -512,6 +554,17 @@ void renderBullet()
     }
     refresh();
     usleep(sleepTime());
+}
+
+void recoverBullets(){
+    for(int i=0; i<2; i++)
+    {
+        if( (level-bulletTimer[i])*sleepTime()/1000 > A_BULLET)
+        {
+            bulletTimer[i]=level;
+            avaiBullets[i] = min(MAX_BULLETS, avaiBullets[i]+1);
+        }
+    }
 }
 
 int sleepTime() { return level >= AC_GAP*(LIMIT-1) ? GAP/LIMIT : AC_GAP*GAP/(AC_GAP+max(0, level)) ; }
@@ -632,7 +685,7 @@ void printLeaderBoard()
     }
     
     refresh();
-
+    
     noecho();
     keypad(stdscr, TRUE);
     int key = 1;

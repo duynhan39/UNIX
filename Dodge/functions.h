@@ -40,6 +40,9 @@ using namespace std;
 // Constants for Human Mode
 #define HUM_HEI 15
 #define HUM_WID 50
+#define BULL_REC 10
+#define A_BULLET 500
+#define MAX_BULLETS 10
 
 // Modes
 #define PC_MODE 1
@@ -71,11 +74,14 @@ void init();
 // Printing function
 void greet();
 void printBorders(int end=-1,  int from=0, int color=YELLOW, bool bold=true);
-void printPlayer();
-void printScore();
 void printMess(std::string message, int color=-1, int loc=LINES/2, bool bold=false);
+void printPlayer();
+
+void printScore();
 void printLeaderBoard();
+
 void printWinner();
+void printPockets();
 
 //void printBullets(vector<vector<int>> grid);
 
@@ -88,6 +94,7 @@ int sleepTime();
 int getWid();
 int getHei();
 bool askCont();
+int pToC(int p);
 
 // Games
 void playPC();
@@ -100,6 +107,7 @@ void gameOver();
 bool dropObjects();
 
 void renderBullet();
+void recoverBullets();
 
 // Data base
 void upDateDataBase();
