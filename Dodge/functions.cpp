@@ -2,21 +2,18 @@
 
 //using namespace std;
 
+int MODE;
 vector<int> player;
+int level;
+int gameStat;
 
 queue<int> objLoc;
-int level;
 string playerName;
 int maxOfPlayer;
-int gameStat;
 
 vector<queue<int>> bullets(2);
 vector<int> avaiBullets(2);
 vector<int> bulletTimer(2);
-
-int MODE;
-
-struct hsRec { std::string name; int score; };
 
 ////////////////////////////////////////////////////////
 //                  GAME OUTLINE
@@ -68,7 +65,8 @@ void init()
     init_pair(12, COLOR_CYAN, COLOR_BLUE);
     init_pair(13, COLOR_RED, COLOR_GREEN);
     
-    MODE = 1;
+    MODE=1;
+    gameStat=0;
 }
 
 void greet()
@@ -215,7 +213,7 @@ void printPlayer()
             break;
     }
     printBorders();
-    //    refresh();
+    refresh();
 }
 
 void printMess(string message, int color, int loc, bool bold)
@@ -224,7 +222,7 @@ void printMess(string message, int color, int loc, bool bold)
     
     if (loc == -1) loc = LINES/2;
     
-    move(loc, (COLS+2-message.size())/2);
+    move(loc, (COLS+1-message.size())/2);
     printw("%s", message.c_str());
     
     move(0,0);
@@ -269,6 +267,8 @@ void getMode()
     options.push_back("Another mortal");
     
     // Taking user input
+    flushinp();
+    nodelay(stdscr, FALSE);
     keypad(stdscr, TRUE);
     int key;
     do {
@@ -297,6 +297,8 @@ bool askCont()
     int choice=0;
     
     // Taking user input
+    flushinp();
+    nodelay(stdscr, FALSE);
     keypad(stdscr, TRUE);
     int key;
     do {
@@ -318,16 +320,38 @@ bool askCont()
 
 void getName()
 {
+    flushinp();
+    nodelay(stdscr, FALSE);
+    echo();
+    
     char name[NAME_LEN+1];
     printMess("[Tell me your name, mortal]", BLUE); // it's actualy purple @@
     move(LINES/2+1, (COLS-NAME_LEN)/2);
     getnstr(name, NAME_LEN);
     
     string nameStr(name);
-    playerName = nameStr;
+    
+    playerName = nameStr == "" ? "A random f*k" : nameStr;
 }
 
-int pToC(int p) { return (p == 0) ?  GREEN : RED; }
+void getMax()
+{
+    GDBM_FILE f;
+    datum pName, maxScore;
+    
+    char *nameR = new char[playerName.length() + 1];
+    strcpy(nameR, playerName.c_str());
+    
+    pName.dptr = nameR;
+    pName.dsize = strlen(nameR);
+    
+    f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
+    maxScore = gdbm_fetch(f, pName);
+    
+    maxScore.dptr == NULL ? maxOfPlayer = -1 : maxOfPlayer = atoi(maxScore.dptr);
+    
+    gdbm_close(f);
+}
 
 int score() { return max(0,level)/LEVEL_SCORE; }
 
@@ -360,11 +384,12 @@ void playPC()
 {
     // Init Game Data
     player.clear();
-    queue<int> empty;
-    swap(objLoc, empty);
-    
     player.push_back(COLS/2);
     level = -LINES+1;
+    
+    queue<int> empty;
+    swap(objLoc, empty);
+    //......................
     
     clear();
     printBorders();
@@ -374,6 +399,8 @@ void playPC()
     clear();
     printMess("Only move", YELLOW);
     printMess("if you are truely prepared", YELLOW, LINES/2+1);
+    printMess("LEFT || RIGHT", YELLOW, LINES/2+3);
+    printMess("['p' to quit]", YELLOW, LINES/2+4);
     
     printPlayer();
     
@@ -386,30 +413,38 @@ void playPC()
     sleep(1);
     
     clear();
+    
     if(score() > maxOfPlayer)
         upDateDataBase();
     
     printLeaderBoard();
 }
 
+/////////////////////////
 void playHUM()
 {
     // Init game data
-    vector<queue<int>> empty(2);
-    swap(bullets, empty);
-    
-    vector<int> fullBullets(2, 10);
-    swap(avaiBullets, fullBullets);
-    
     player.clear();
     player.push_back(COLS/2);
     player.push_back(COLS/2);
     
     level = 0;
     
+    vector<queue<int>> empty(2);
+    swap(bullets, empty);
+    
+    vector<int> fullBullets(2, 10);
+    swap(avaiBullets, fullBullets);
+    
+    vector<int> emptyTimer(2, 0);
+    swap(bulletTimer, emptyTimer);
+    
     clear();
-    //    printBorders((LINES + HUM_HEI)/2, (LINES - HUM_HEI)/2, MODE);
+    
     printMess("READY?", MODE);
+    printMess("<=, => and ^", GREEN, LINES/2+1);
+    printMess("a, d, and w", RED, LINES/2+2);
+    printMess("['p' to quit]", MODE, LINES/2+3);
     printPlayer();
     
     // Game ON!
@@ -417,11 +452,11 @@ void playHUM()
     
     clear();
     printWinner();
-    //    sleep(2);
 }
 
 void RUN()
 {
+    flushinp();
     noecho();
     keypad(stdscr, TRUE);
     int key;
@@ -431,18 +466,17 @@ void RUN()
     while(key != 'p' && gameStat==0)
     {
         nodelay(stdscr, TRUE);
+        clear();
+        printPlayer();
         
         if(key == KEY_RIGHT)
             player[0] = min(player[0]+1, (COLS+getWid())/2);
         else if(key == KEY_LEFT)
             player[0] = max(player[0]-1, (COLS-getWid())/2);
         
-        clear();
-        ////////////////////////////////
-        printPlayer();
         if(MODE==PC_MODE)
         {
-            ///////////////
+            //............
             dropObjects() ? gameStat=0 : gameStat=1;
         } else if(MODE==HUM_MODE)
         {
@@ -460,7 +494,6 @@ void RUN()
                     } else {
                         bullets[0].push(-1);
                     }
-                    bullets[1].push(-1);
                     break;
                 case 'w':
                     if(avaiBullets[1]>0) {
@@ -469,20 +502,20 @@ void RUN()
                     } else {
                         bullets[1].push(-1);
                     }
-                    bullets[0].push(-1);
                     break;
                 default:
-                    bullets[0].push(-1);
-                    bullets[1].push(-1);
                     break;
             }
-            ///////////////
-            
-            renderBullet();
+            if(key != KEY_UP)
+                bullets[0].push(-1);
+            if(key != 'w')
+                bullets[1].push(-1);
+        
+            renderBullets();
+            recoverBullets();
         }
         key = getch();
         level++;
-        recoverBullets();
     }
     sleep(1);
 }
@@ -519,7 +552,7 @@ bool dropObjects()
     return gameOn;
 }
 
-void renderBullet()
+void renderBullets()
 {
     gameStat=0;
     for(int i=0; i<2; i++)
@@ -567,7 +600,7 @@ void recoverBullets(){
     }
 }
 
-int sleepTime() { return level >= AC_GAP*(LIMIT-1) ? GAP/LIMIT : AC_GAP*GAP/(AC_GAP+max(0, level)) ; }
+int sleepTime() { return level >= AC_GAP*(LIMIT-1) ? GAP/LIMIT : AC_GAP*GAP/(AC_GAP+max(0, level)); }
 
 void gameOver()
 {
@@ -582,68 +615,106 @@ void gameOver()
 void upDateDataBase()
 {
     // First time player
-    if (FILE *f = fopen(DATA_FILE, "r"))
-    {
-        fclose(f);
-    }
+//    if (FILE *f = fopen(DATA_FILE, "r"))
+//    {
+//        fclose(f);
+//    }
     // Updating
-    else
+//    else
+//    {
+//        GDBM_FILE fG;
+//        fG = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
+//        gdbm_close(fG);
+//    }
+    struct hsRec worst = getMinPlayer();
+    
+    GDBM_FILE f;
+    f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
+    
+//    ............................................................
+    cout<<"FLAG UDDB 2"<<endl;
+    
+    add_to_record(f, playerName, to_string(score()), worst);
+    
+//    ............................................................
+    cout<<"FLAG UDDB 3"<<endl;
+    
+    gdbm_close(f);
+}
+
+void add_to_record(GDBM_FILE db, string player, string curScore, struct hsRec worst)
+{
+    if(worst.score < score())
     {
-        GDBM_FILE fG;
-        fG = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
-        gdbm_close(fG);
+        /////
+        if(maxOfPlayer == -1) {
+            datum worstPl;
+            char *nameR = new char[worst.name.length() + 1];
+            strcpy(nameR, worst.name.c_str());
+            worstPl.dptr = nameR;
+            worstPl.dsize = worst.name.length()+1;
+            gdbm_delete(db, worstPl);
+        }
+        /////
+        
+        datum name, data; // Key and value (name and score).
+        
+        char *nameR = new char[player.length() + 1];
+        strcpy(nameR, player.c_str());
+        
+        char *scoreR = new char[curScore.length() +1];
+        strcpy(scoreR, curScore.c_str());
+        
+        // Adding the player name and his max score
+        name.dptr = nameR;
+        name.dsize = strlen(nameR);
+        
+        data.dptr = scoreR;
+        data.dsize = strlen(scoreR);
+        
+        // Storing
+        gdbm_store(db, name, data, GDBM_REPLACE);
+        
+        delete [] nameR;
+        delete [] scoreR;
     }
-    
-    GDBM_FILE f;
-    f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
-    add_to_record(f, playerName, to_string( score() ));
-    gdbm_close(f);
-}
-
-void add_to_record(GDBM_FILE db, string player, string score)
-{
-    datum name, data; // Key and value (name and score).
-    
-    char *nameR = new char[player.length() + 1];
-    strcpy(nameR, player.c_str());
-    
-    char *scoreR = new char[score.length() +1];
-    strcpy(scoreR, score.c_str());
-    
-    // Adding the player name and his max score
-    name.dptr = nameR;
-    name.dsize = strlen(nameR);
-    
-    data.dptr = scoreR;
-    data.dsize = strlen(scoreR);
-    
-    // Storing
-    gdbm_store(db, name, data, GDBM_REPLACE);
-    
-    delete [] nameR;
-    delete [] scoreR;
-}
-
-void getMax()
-{
-    GDBM_FILE f;
-    datum pName, maxScore;
-    
-    char *nameR = new char[playerName.length() + 1];
-    strcpy(nameR, playerName.c_str());
-    
-    pName.dptr = nameR;
-    pName.dsize = strlen(nameR);
-    
-    f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
-    maxScore = gdbm_fetch(f, pName);
-    
-    maxScore.dptr == NULL? maxOfPlayer = -1 : maxOfPlayer = atoi(maxScore.dptr);
-    
-    gdbm_close(f);
 }
 
 bool compareRec(const hsRec &a, const hsRec &b) { return a.score > b.score; }
+
+struct hsRec getMinPlayer()
+{
+    GDBM_FILE f;
+    datum current_key, current_data;
+    f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
+    
+    vector<hsRec> db;
+    current_key = gdbm_firstkey(f);
+    while(current_key.dptr != NULL)
+    {
+        // Fetching data out of database
+        current_data = gdbm_fetch(f, current_key);
+        
+        if(current_data.dptr != NULL)
+        {
+            struct hsRec curr;
+            curr.name = current_key.dptr;
+            curr.score = atoi(current_data.dptr);
+            
+            db.push_back(curr);
+        }
+        current_key = gdbm_nextkey(f, current_key);
+    }
+    
+    // Taking top scores
+    sort(db.begin(), db.end(), compareRec);
+    
+    gdbm_close(f);
+    struct hsRec noone;
+    noone.name = NOONE;
+    noone.score = -1;
+    return db.size() > LB_SIZE ? db[db.size()-1] : noone;
+}
 
 void printLeaderBoard()
 {
@@ -674,7 +745,7 @@ void printLeaderBoard()
     
     printMess("===Leader Board===");
     
-    int listSize = min(4, (int)db.size() );
+    int listSize = min(LB_SIZE, (int)db.size() );
     for(int i=listSize-1; i>=0; i--)
     {
         string line(NAME_LEN-db[i].name.size()+6-to_string(db[i].score).size(), ' ');

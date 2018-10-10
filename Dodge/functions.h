@@ -35,6 +35,8 @@ using namespace std;
 #define PC_WID 30
 #define LEVEL_SCORE 15
 #define NAME_LEN 12
+#define NOONE "=============="
+#define LB_SIZE 5
 #define DATA_FILE "highscores.dat"
 
 // Constants for Human Mode
@@ -65,6 +67,8 @@ using namespace std;
 #define CYAN_BLUE 12
 #define RED_GREEN 13
 
+struct hsRec { string name; int score; };
+
 // MAIN FUNCTION
 void GAME();
 
@@ -83,18 +87,17 @@ void printLeaderBoard();
 void printWinner();
 void printPockets();
 
-//void printBullets(vector<vector<int>> grid);
-
 // Getting function
 void getMode();
-void getName();
-void getMax();
-int score();
 int sleepTime();
 int getWid();
 int getHei();
 bool askCont();
-int pToC(int p);
+
+void getName();
+void getMax();
+int score();
+struct hsRec getMinPlayer();
 
 // Games
 void playPC();
@@ -106,12 +109,12 @@ void gameOver();
 
 bool dropObjects();
 
-void renderBullet();
+void renderBullets();
 void recoverBullets();
 
 // Data base
 void upDateDataBase();
-void add_to_record(GDBM_FILE db, std::string player, std::string score);
+void add_to_record(GDBM_FILE db, std::string player, std::string score, struct hsRec worst);
 void printLeaderBoard();
 
 #endif
