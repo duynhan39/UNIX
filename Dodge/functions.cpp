@@ -22,7 +22,7 @@ void GAME()
 {
     refresh();
     init();
-    //greet();
+    greet();
     
     bool cont=true;
     while(cont)
@@ -614,30 +614,11 @@ void gameOver()
 
 void upDateDataBase()
 {
-    // First time player
-//    if (FILE *f = fopen(DATA_FILE, "r"))
-//    {
-//        fclose(f);
-//    }
-    // Updating
-//    else
-//    {
-//        GDBM_FILE fG;
-//        fG = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
-//        gdbm_close(fG);
-//    }
     struct hsRec worst = getMinPlayer();
     
     GDBM_FILE f;
     f = gdbm_open(DATA_FILE, 512, GDBM_WRCREAT, 0666, 0);
-    
-//    ............................................................
-    cout<<"FLAG UDDB 2"<<endl;
-    
     add_to_record(f, playerName, to_string(score()), worst);
-    
-//    ............................................................
-    cout<<"FLAG UDDB 3"<<endl;
     
     gdbm_close(f);
 }
