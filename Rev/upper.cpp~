@@ -1,0 +1,78 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <string.h>
+
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+#include <semaphore.h>
+#include <sys/wait.h>
+#include <signal.h>
+
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+  
+  if (argc != 4) {
+    cerr << "error: improper usage" << endl;
+    exit(1);
+  }
+
+    int running = 1;
+    void *shared_memory = (void *)0;
+    struct shared_use_st *shared_stuff;
+    string message;
+    int shmfd;
+          
+    void *addr = (void *)"Lalaland";
+          
+    sem_t *sem_p;
+    sem_p = sem_open(argv[1], 0);
+        
+    // Open a shared memory object
+    char const *shm_name = "/shm_lalala";
+    shmfd = shm_open(shm_name, O_RDWR, 0);
+    if (shmfd == -1) {
+        perror("shm_open");
+        exit(1);
+    }
+    
+    sem_wait(sem_p);
+    // Map the object into our address space.
+    shared_memory = mmap(addr, sizeof(struct shared_use_st),
+                        PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
+
+    if(shared_memory == MAP_FAILED) {
+        perror("mmap");
+        exit(1);
+    }
+
+    // We can close the file descriptor after mmap
+    close(shmfd);
+
+    cout << "Child memory attached at " << shared_memory << endl;
+
+    shared_stuff = (struct shared_use_st *)shared_memory;
+    while(running) {
+        //sem_wait(sem_p);
+        msync(NULL, sizeof(struct shared_use_st), PROT_READ);
+        while(shared_stuff->written_by_you == 1) {
+            //sem_wait(sem_p);
+            sleep(1);
+            cout << "waiting for server ..." << endl;
+        }
+        cout << "Enter some text: ";
+        getline(cin, message);
+
+
+  string in, out;
+  cin>>in;
+  transform(in.begin(), in.end(), in.begin(), ::toupper);
+  cout<<in<<endl;
+
+  return 0;
+}
