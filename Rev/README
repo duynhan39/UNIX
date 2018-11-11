@@ -1,0 +1,8 @@
+SHM: Working
+SEM: Working
+MQ: Not quite. I have it set up and all, but since it does not working, i commented it out. 
+	It just does not deliver the message how ever I tried.
+	It print out some weird symbols and such.
+
+Run "make" and "./master"
+

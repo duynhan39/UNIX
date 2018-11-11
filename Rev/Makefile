@@ -1,4 +1,7 @@
-dummy: reverse upper
+dummy: master reverse upper
+
+master: master.cpp shm_com.h
+	g++ -o master master.cpp -pthread -lrt
 
 reverse: reverse.cpp shm_com.h
 	g++ -o reverse reverse.cpp -pthread -lrt

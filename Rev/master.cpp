@@ -8,92 +8,143 @@ struct msg { long type; char data[MAXLEN]; };
 
 using namespace std;
 
-int main(){
-  
-  sem_t *sem_p;
-  int status;
-  char const *sem_name = "/olaland";
+void init();
+void forking(int &fpid1, int &fpid2);
 
-  sem_p = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 1);
+// SEM
+sem_t *sem_p;
+int status;
 
-  //msg srvmsg, rcdmsg;
-  msg tmsg;
-  //string srvstr, rcdstr;
-  string textstr;
-  time_t curtime;
+// SHM
+void *shared_memory = (void *)0;
+struct shared_use_st *shared_stuff;
 
-  srand(getpid());
-  tmsg.type = SRVMSG;
+// MQ
+mqd_t mqfd;
+struct mq_attr attr;
 
-  string mtor("/myq_mtor")
+// NAME
+char *mq_name;
+char *shm_name;
+char *sem_name;
+
+//int sig;
+void CONT(int signal) { }
+
+int main()
+{
+    shm_name = (char*)"shm_what";
+    sem_name = (char*)"sem_lala";
+    mq_name = (char*)"/mq_bloodyhell";
     
-  struct mq_attr attr;
-  attr.mq_flags = 0;
-  attr.mq_maxmsg = 1;
-  attr.mq_msgsize = sizeof(tmsg);
-  mqd_t mtor_id = mq_open(
-			  mtor.c_str(), 
-			  O_CREAT | O_EXCL | O_WRONLY, 
-			  0600,
-			  &attr);
-
-  cout << "Message queue name is " << mtor << endl;
+    init();
+    
+    int fpid1, fpid2;
+    forking(fpid1, fpid2);
+    
+    //// First message is to send Master's pid to Upper
+//    if(fpid1 != 0)
+//    {
+//        string pid = to_string((int)fpid1);
+//        mq_send(mqfd, pid.c_str(), 256, 1);
+//        //pause();
+//    }
+    
+    //////////////////
+    cout<<"> \e[1m";
+    cout<<fpid1<<" > \e[1m";
  
-  int fpid = fork();
-  if (fpid == 0) {
-
-    int fpid2 = fork();
-    if (fpid2 == 0) {
-      cout<<"Starting the Upper"<<endl;
-      execl("upper", "upper", "/shm_lalalol" ,sem_name, NULL);
-    }
-    cout<<"Starting the Reverse"<<endl;
-    execl("reverse", "reverse", "msg queue", "/shm_lalalol" ,sem_name, NULL);
-  }
-
-  while(1) {
-
-    /////////////////////
-    cout<<"Flag Ser 1"<<endl;
-    /////////////////////
-
-    sem_wait(sem_p);
-    // Generate message (time and date)
-    cout<<"<\e[1m";
     string in;
-    getline(cin, in);
-    cout<<"\e[0m";
-    srvstr = in;
-    srvstr[srvstr.length()-1] = '\0';
+    while(1) {
+        bool cont=true;
+
+        //// Put in if mq works ///////////
+//        if(!getline(cin, in))
+//        { cont=false; }
+        
+//        mq_send(mqfd, in.c_str(), 256, 1);
+//
+//        pause();
+//        signal(SIGUSR1, CONT);
+        
+        sleep(3);
+        
+        // To terminate the program after a certain amount of since since I
+        // cant have mq works
+        cont = false;
+        
+        if(!cont) {
+            mq_send(mqfd, "4^%@F@^&@QUIT!;", 256, 1);
+            break;
+        }
+        
+        /// TO THE SCREEN
+        cout<<"> \e[1m";
+    }
+    //////////////////
     
-    // Copy char array into C++ string
-    srvstr.copy(srvmsg.data,MAXLEN-1);
-    // in case message is longer than buffer
-    // make sure it is zero terminated
-    srvmsg.data[MAXLEN-1] = '\0';
-
-    /////////////////////
-    cout<<"Flag Ser 2"<<endl;
-    /////////////////////
-
-    // Send message to client
-    cout << "Server sending: " << srvmsg.data << endl;
-    mq_send(stoc_id, (const char *)&srvmsg, sizeof(srvmsg), 0);
-    // Wait for acknowledgement
+    wait(&status);
     
-    sleep(rand()%4);
-    sem_post(sem_p);
-  }
+    //cout<<"DONE"<<endl;
+    
+    return 0;
+}
 
-  sem_close(sem_p);
-  wait(&status);
-  // delete the semaphore
-  sem_unlink(sem_name);
 
-  mq_close(stoc_id);
-  mq_close(ctos_id);
-  mq_unlink(stoc.c_str());
-  mq_unlink(ctos.c_str());
+void init()
+{
+    // MESS QUEUE ///////////////////////////////
+    attr.mq_maxmsg = 256;
+    attr.mq_msgsize = 256;
+    attr.mq_flags   = 0;
+    mqfd = mq_open(mq_name, O_WRONLY|O_CREAT, 0666, &attr);
+    
+    // SHARED MEM ///////////////////////////////
+    string message;
+    int shmfd;
+    shmfd = shm_open(shm_name, O_RDWR | O_CREAT | O_EXCL, 0666);
+    
+    if (shmfd == -1) {
+        shm_unlink(shm_name);
+        sem_unlink(sem_name);
+        shmfd = shm_open(shm_name, O_RDWR | O_CREAT | O_EXCL, 0666);
+    }
+    // Set the size of the memory object
+    if(ftruncate(shmfd, sizeof(struct shared_use_st)) == -1) {
+        perror("ftruncate");
+        exit(1);
+    }
+    
+    shared_memory = mmap(NULL, sizeof(struct shared_use_st),
+                         PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
+    if(shared_memory == MAP_FAILED) {
+        perror("mmap");
+        exit(1);
+    }
+    close(shmfd);
+    
+    // SEM ///////////////////////////////////////
+    sem_t *sem_p;
+    sem_p = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 1);
+}
 
-  return 0;
+void forking(int &fpid1, int &fpid2)
+{
+    fpid1 = fork();
+    if (fpid1 == 0) {
+        fpid2 = fork();
+        if(fpid2 == 0)
+            execl("reverse", "reverse", mq_name, shm_name, sem_name, NULL);
+        else
+            execl("upper", "upper", shm_name, sem_name, NULL);
+    }
+}
+
+void cleanUp()
+{
+    munmap(shared_memory, sizeof(struct shared_use_st));
+    shm_unlink(shm_name);
+    sem_close(sem_p);
+    wait(&status);
+    sem_unlink(sem_name);
 }

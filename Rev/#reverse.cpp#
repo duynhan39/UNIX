@@ -1,0 +1,103 @@
+#include "shm_com.h"
+
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+  if (argc != 4) {
+    cerr << "error: improper usage" << endl;
+    exit(1);
+  }
+ 
+  void *shared_memory = (void *)0;
+  struct shared_use_st *shared_stuff;
+  int shmfd;
+
+  void *addr = (void *)"Lalaland";    
+
+  // Open a shared memory object
+  char const *shm_name = argv[2];
+  shmfd = shm_open(shm_name, O_RDWR, 0666);
+    
+  int status;
+  char const *sem_name = argv[3];
+  sem_t *sem_p; // = sem_open(sem_name, 0);
+
+  if (shmfd == -1) {
+    shm_unlink(shm_name);
+    sem_unlink(sem_name);
+    cout<<"Err print"<<endl;
+    perror("shm_open");
+    exit(1);
+  }
+
+  // Set the size of the memory object
+  if(ftruncate(shmfd, sizeof(struct shared_use_st)) == -1) {
+    perror("ftruncate");
+    exit(1);
+  }
+  
+  struct mq_attr attr;
+  attr.mq_maxmsg = 256;
+  attr.mq_msgsize = 256;
+  attr.mq_flags   = 0;
+
+  mqd_t mtor_id = mq_open(argv[1], O_RDONLY|O_CREAT, 0666, &attr);
+  char message[256];
+  mq_receive(mtor_id, message, sizeof(message), NULL);
+
+  ///////////////////////////////////
+  cout<<"Recieve form M to R: "<<message<<endl;
+
+  //wait(&status);
+  //sem_wait(sem_p);
+
+  strcpy(message, "Hello there?");
+  cout<<"Mess is: "<<message<<endl;
+
+  // Reverse the message
+  string out;
+  for(int i=strlen(message)-1; i>=0; i--)
+    out+=message[i];
+  
+  sem_p = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 1);
+
+  // Map the object into our address space.
+  shared_memory = mmap(addr, sizeof(struct shared_use_st),
+		       PROT_WRITE, MAP_SHARED, shmfd, 0);
+					
+  if(shared_memory == MAP_FAILED) {
+    perror("mmap");
+    exit(1);
+  }
+
+  wait(&status);
+  sem_wait(sem_p);
+  
+  shared_stuff = (struct shared_use_st *)shared_memory;
+
+  
+  shared_stuff->written_by_you = 1;
+  strncpy(shared_stuff->some_text, out.c_str(), TEXT_SZ);
+  shared_stuff->written_by_you = 0;
+
+  sleep(1);
+  sem_post(sem_p);
+  				
+  close(shmfd);
+    
+  munmap(shared_memory, sizeof(struct shared_use_st));
+  shm_unlink(shm_name);
+
+  sem_close(sem_p);
+  wait(&status);
+  sem_unlink(sem_name);
+  cout << "Parent is exiting." << endl;
+
+  exit(EXIT_SUCCESS);
+
+  //////////
+  
+
+  return 0;
+}
