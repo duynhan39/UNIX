@@ -23,16 +23,22 @@ brew install gdbm
 
 Clone the project to where you want to have it on your local machine
 
-### Installing
+### Running
 
 After cloning the project, inside the directory by
-```cd Dodge```
-Then run
+```
+cd Dodge
+```
+For the first time running, type
 ```
 make
+```
+Now, everytime you want to play, just have to type
+```
 ./game
 ```
 
+**Enjoy the game!**
 
 ## Versions
 
