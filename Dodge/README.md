@@ -49,6 +49,6 @@ Now, everytime you want to play, just have to type
   * Fixed minor bugs with database then caused it to run out of memory
   * Fixed speed transition to make its increasement smoother
 
-## Authors
+## Author
 
 * [**Nhan Cao**](https://www.linkedin.com/in/nhan-cao/)
