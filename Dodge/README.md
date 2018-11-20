@@ -38,6 +38,8 @@ Now, everytime you want to play, just have to type
 ./game
 ```
 
+<img src="https://github.com/duynhan39/UNIX/blob/master/Dodge/Dodge.png" width="350">
+
 **Enjoy the game!**
 
 ## Versions
@@ -47,6 +49,6 @@ Now, everytime you want to play, just have to type
   * Fixed minor bugs with database then caused it to run out of memory
   * Fixed speed transition to make its increasement smoother
 
-## Authors
+## Author
 
 * [**Nhan Cao**](https://www.linkedin.com/in/nhan-cao/)
