@@ -132,15 +132,10 @@ void multS(float* A, float* B, float* C, int size)
 void multM(float* A, float* B, float* C, int size) {
     int thrd_num = min(size, THRD_NUM);
     int curr = 0;
-    signal = thrd_num;
+    signal = 0;  
     pthread_t thrds[thrd_num];
+    int num_line = max(size/THRD_NUM, 50);
     for (int t = 0; t < thrd_num ; t++) {
-	int num_line;
-	if (t < size % THRD_NUM)
-	  num_line = size/THRD_NUM + 1;
-	else
-	  num_line = size/THRD_NUM;
-        
         struct args_t args;
         args.a = A;
         args.b = B;
@@ -149,6 +144,9 @@ void multM(float* A, float* B, float* C, int size) {
         args.st = curr;
 	args.end = min(size, curr+num_line);
         curr += num_line;
+
+        if(curr>=size) break;
+        signal++;
         pthread_create (&thrds[t], NULL, &mult, &args);
     }
     while(signal!=0){}
