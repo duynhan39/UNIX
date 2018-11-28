@@ -46,8 +46,10 @@ Now, everytime you want to play, just have to type
 
 * **Version 2.0:** Major update release.
   * Featuring **dual players mode**
-  * Fixed minor bugs with database then caused it to run out of memory
+  * Fixed database error that caused it to run out of memory
   * Fixed speed transition to make its increasement smoother
+  **Version 2.1:** Minor bugs fixed
+  
 
 ## Author
 
