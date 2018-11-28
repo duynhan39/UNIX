@@ -48,7 +48,7 @@ Now, everytime you want to play, just have to type
   * Featuring **dual players mode**
   * Fixed database error that caused it to run out of memory
   * Fixed speed transition to make its increasement smoother
-  **Version 2.1:** Minor bugs fixed
+* **Version 2.1:** Minor bugs fixed
   
 
 ## Author
