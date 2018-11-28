@@ -12,8 +12,7 @@ It can be used as a helpful tool to teach programming due to its simplicity and 
 
 ### Prerequisites
 
-First you have to install `gdbm` for database and `ncurses` for graphics. Open your terminal, run
-For Mac:
+First you have to install `gdbm` for database and `ncurses` for graphics. Open your Terminal, run:
 ```
 brew install ncurses
 brew install gdbm
