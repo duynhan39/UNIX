@@ -47,7 +47,9 @@ int main(int argc, char *argv[])
                     // This is to make sure in is all digits
                     // Still err happens
                     //cout<<"Before the fall\n";
-                    masterPID = stoi(in);
+                    //cout<<"Here1"<<endl;
+                    //ADD BACK//masterPID = stoi(in);
+		    //cout<<"here2"<<endl;
                     //cout<<"Master PID: "<<masterPID<<endl;
                 }
                 else {

@@ -43,12 +43,12 @@ int main()
     forking(fpid1, fpid2);
     
     //// First message is to send Master's pid to Upper
-//    if(fpid1 != 0)
-//    {
-//        string pid = to_string((int)fpid1);
-//        mq_send(mqfd, pid.c_str(), 256, 1);
-//        //pause();
-//    }
+    if(fpid1 != 0)
+    {
+        string pid = to_string((int)fpid1);
+        mq_send(mqfd, pid.c_str(), 256, 1);
+        //pause();
+    }
     
     //////////////////
     cout<<"> \e[1m";
@@ -59,15 +59,17 @@ int main()
         bool cont=true;
 
         //// Put in if mq works ///////////
-//        if(!getline(cin, in))
-//        { cont=false; }
+        if(!getline(cin, in))
+        { cont=false; }
         
-//        mq_send(mqfd, in.c_str(), 256, 1);
-//
-//        pause();
-//        signal(SIGUSR1, CONT);
+	cout<<"IN: "<<in<<endl;
+        mq_send(mqfd, in.c_str(), 256, 0);
+
+        pause();
+        signal(SIGUSR1, CONT);
+        /////
         
-        sleep(3);
+        sleep(1);
         
         // To terminate the program after a certain amount of since since I
         // cant have mq works
@@ -94,11 +96,11 @@ int main()
 void init()
 {
     // MESS QUEUE ///////////////////////////////
-    attr.mq_maxmsg = 256;
+    attr.mq_maxmsg = 10;
     attr.mq_msgsize = 256;
     attr.mq_flags   = 0;
-    mqfd = mq_open(mq_name, O_WRONLY|O_CREAT, 0666, &attr);
-    
+    mqfd = mq_open(mq_name, O_CREAT | O_RDONLY , 0600, &attr);
+    cout<<"M: "<<mqfd<<endl;
     // SHARED MEM ///////////////////////////////
     string message;
     int shmfd;

@@ -33,6 +33,8 @@ int main(int argc, char *argv[])
     shm_name = argv[2];
     sem_name = argv[3];
     
+    cout<<"MQ "<<mq_name<<endl;
+
     init();
     
     bool first = true;
@@ -42,24 +44,33 @@ int main(int argc, char *argv[])
     string in;
     ///////////////////
     
-    char *message;
+    char message[256+1];
+
+    cout<<"Here1"<<endl;
     mq_receive(mqfd, message, 256, NULL);
+    cout<<"here2"<<endl;
+
+    cout<<"REC: "<<message<<endl;
+
     bool cont=true;
     while(1) {
 
         // OUT if mq works
         //// TO THE SCREEN /////////
-        if(!first)
-            if(!getline(cin, in))
-            { cont=false; }
+//        if(!first)
+//            if(!getline(cin, in))
+//            { cont=false; }
         ///////////////////////////
         
         // Put this in if mq works
-//        mq_receive(mqfd, message, 256, NULL);
-//        string in(message);
-//        if(in == "4^%@F@^&@QUIT!;")
-//            cont = false;
-        
+        mq_receive(mqfd, message, 256, NULL);
+        string in(message);
+
+	cout<<"REC: "<<message<<endl;
+
+        if(in == "4^%@F@^&@QUIT!;")
+            cont = false;
+        //        
         string out;// in(message);
         
         out = in;
@@ -110,11 +121,11 @@ int main(int argc, char *argv[])
 void init()
 {
     // MESSAGE QUEUE
-    attr.mq_maxmsg = 256;
+    attr.mq_maxmsg = 10;
     attr.mq_msgsize = 256;
     attr.mq_flags   = 0;
-    mqfd = mq_open(mq_name, O_RDONLY|O_CREAT, 0666, &attr);
-    
+    mqfd = mq_open(mq_name, O_RDONLY);
+    cout<<"REV M: "<<mqfd<<endl;
     // SHARED MEM
     string message;
     int shmfd;
