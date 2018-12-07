@@ -4,10 +4,11 @@ all: player_referee
 	chmod +x *
 	@echo Compiled Rock,paper,scissors!
 
-player_referee: player.cpp referee.cpp
+player_referee: player.cpp referee.cpp gui-player.cpp
 	g++ referee.cpp -o referee -std=c++11
 	g++ player.cpp -o player -std=c++11
 	g++ gui-player.cpp -o gui-player -std=c++11 ${CFLAGS}
+
 clean: 
 	rm -f player referee
 	rm -f player.exe referee.exe
