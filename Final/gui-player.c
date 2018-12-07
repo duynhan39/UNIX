@@ -20,150 +20,68 @@ int len;
 struct addrinfo *r;
 int nread, result;
 
+//string input, response;
+static char buffer[128];
+int buflen = sizeof(buffer);
+
+char serverMess[100];
+char playerNumStr[20];
 
 GtkWidget *window;
 GtkWidget *vbox, *hbox;
 //GtkWidget *entryS, *entryP;
 GtkWidget *button, *view;
-GtkWidget *check;
+GtkWidget *text;
 
-/*
-static void enter_server( GtkWidget *widget,
-                           GtkWidget *entry)
-{
-    server = gtk_entry_get_text (GTK_ENTRY (entry));
-    printf ("Server: %s\n", server);
-}
-
-
-static void enter_port( GtkWidget *widget,
-                           GtkWidget *entry)
-{
-    port = gtk_entry_get_text (GTK_ENTRY (entry));
-    printf ("Port: %s\n", port);
-}
-*/
-
-static void enter_info( GtkWidget *widget,
-			GtkWidget *entryS,
-			GtkWidget *entryP)
+static void ready( GtkWidget *widget )
 {  
-    if(!inGame) { 
-     // do {
-      server = gtk_entry_get_text (GTK_ENTRY (entryS));
-      printf ("Server: %s\n", server);
-
-      port = gtk_entry_get_text (GTK_ENTRY (entryP));
-      printf ("Port: %s\n", port);
-
-      //getaddrinfo(server, port, NULL, &r);
-      // Create a socket for the client.
-      //sockfd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
-      // Now connect our socket to the server's socket.
-      //result = connect(sockfd, r->ai_addr, r->ai_addrlen);
-      //  if(result == -1) {
-          //cerr << "client: connect failed" << endl;
-      //    exit(1);
-      //  }
-      //} while(1);
-    
-//    gtk_container_remove(GTK_CONTAINER(vbox), entryS);
-//    gtk_container_remove(GTK_CONTAINER(vbox), entryP);
-//    gtk_widget_destroy(entryS);
-//    gtk_widget_destroy(entryP);
-
-      inGame=1;
+    if(!inGame) {
+     write(sockfd, "READY", 6);
+     nread = read(sockfd, buffer, buflen);
+     //out <<""<< buffer << endl;
+     printf("%s\n", buffer); 
+     inGame=1;
     }
-    //gtk_widget_destroy(widget);
 }
 
-int main( int   argc,
-         char *argv[] )
+static void pick ( GtkWidget *widget );
+/*{
+    if(inGame) {
+      strcpy(serverMess, "");
+      char c[15];// = gtk_button_get_label (GTK_BUTTON(widget));
+      strcpy(c, gtk_button_get_label (GTK_BUTTON(widget)) );
+      printf("%s\n", c );
+      write(sockfd, c, strlen(c)+1);
+      nread = read(sockfd, serverMess, buflen);
+
+      gtk_text_set_editable(GTK_TEXT(text), TRUE);
+      gtk_editable_insert_text (GTK_EDITABLE (text), serverMess, -1, 0);
+      gtk_editable_select_region (GTK_EDITABLE (text),
+                                  0, GTK_ENTRY (text)->text_length);
+      gtk_text_set_editable(GTK_TEXT(text), FALSE);
+     
+     inGame = TRUE;
+    }
+}*/
+
+void connectToServer(char *argv[]);
+void newWindow();
+
+int main( int argc, char *argv[] )
 {
     gtk_init (&argc, &argv);
     char *info[2];
-    //strcpy(info[0], argv[1]);
-    //strcpy(info[1], argv[2]);
-    //strcpy(info[0], "LLA");
-    //strcpy(info[1], "KSM");
     if(argc != 3) {
       printf("%s","syntax: shout [server] [port]\n");
       exit(1);
     }
 
-    getaddrinfo(argv[1], argv[2], NULL, &r);
-    // Create a socket for the client.
-    sockfd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
-    // Now connect our socket to the server's socket.
-    result = connect(sockfd, r->ai_addr, r->ai_addrlen);
-    if(result == -1) {
-        printf("%s", "client: connect failed\n");
-        exit(1);
-    }
+    //////////////////////
+    connectToServer(argv);
+    //////////////////////
     
-//    GtkWidget *window;
-//    GtkWidget *vbox, *hbox;
-//    GtkWidget *entryS, *entryP;
-//    GtkWidget *button;
-//    GtkWidget *check;
-//    gint tmp_pos;
-    
-    //gtk_init (&argc, &argv);
-    
-    /* create a new window */
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_widget_set_size_request (GTK_WIDGET (window), 400, 200);
-    gtk_window_set_title (GTK_WINDOW (window), "DN Fun");
-    g_signal_connect (window, "destroy",
-                      G_CALLBACK (gtk_main_quit), NULL);
-    g_signal_connect_swapped (window, "delete-event",
-                              G_CALLBACK (gtk_widget_destroy),
-                              window);
-
-    vbox = gtk_vbox_new (FALSE, 0);
-    hbox = gtk_hbox_new (FALSE, 0);
-    
-    gtk_container_add (GTK_CONTAINER (window), vbox);
-    //gtk_widget_show (vbox);
-    
-    /////////////////////
- /*   // Server
-    entryS = gtk_entry_new ();
-    
-    gtk_entry_set_max_length (GTK_ENTRY (entryS), 50);
-    //g_signal_connect (entryS, "activate",
-    //                  G_CALLBACK (enter_server),
-    //                  entryS);
-    gtk_entry_set_text (GTK_ENTRY (entryS), argv[1]);
-//    tmp_pos = GTK_ENTRY (entry)->text_length;
-    //gtk_editable_insert_text (GTK_EDITABLE (entry), " world", -1, &tmp_pos);
-    //gtk_editable_select_region (GTK_EDITABLE (entry),
-    //                            0, GTK_ENTRY (entry)->text_length);
-
-    gtk_box_pack_start (GTK_BOX (vbox), entryS, TRUE, TRUE, 0);
-    //gtk_widget_show (entry);
-
-    // Port
-    entryP = gtk_entry_new (); 
-        
-    gtk_entry_set_max_length (GTK_ENTRY (entryP), 50);
-    //g_signal_connect (entryP, "activate",
-    // 			G_CALLBACK (enter_port),
-    //                  	entryP);
-    gtk_entry_set_text (GTK_ENTRY (entryP), argv[2]);
-//    tmp_pos = GTK_ENTRY (entry)->text_length;
-    gtk_box_pack_start (GTK_BOX (vbox), entryP, TRUE, TRUE, 0);
-    //gtk_widget_show (entry);  
-
-    // Connect
-    button = gtk_button_new_with_label ("Connect");
-    g_signal_connect (button, "clicked",
-			    G_CALLBACK (enter_info), entryP);
-    gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, TRUE, 0);
-    //gtk_widget_show (button);
-*/
-
-// NEW
+    // Create new window
+    newWindow();
 
     // Server
     char mess[50] = "Server: ";
@@ -178,18 +96,57 @@ int main( int   argc,
     view = gtk_label_new(mess);
     gtk_box_pack_start (GTK_BOX (vbox), view, FALSE,FALSE, 0); 
 
+    // Player Number
+    view = gtk_label_new(playerNumStr);
+    gtk_box_pack_start (GTK_BOX (vbox), view, FALSE,FALSE, 0);
+
     // Ready
     button = gtk_button_new_with_label ("READY");
-    //g_signal_connect (button, "clicked", G_CALLBACK(print_hello), NULL);
+    g_signal_connect (button, "clicked", G_CALLBACK(ready), NULL);
 
     gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
 
     // Rock, Paper, Scissors
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
+    // Rock
+    button = gtk_button_new_with_label ("Rock");
+    g_signal_connect (button, "clicked", G_CALLBACK(pick), NULL);
+    gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+
+    // Paper
+    button = gtk_button_new_with_label ("Paper");
+    g_signal_connect (button, "clicked", G_CALLBACK(pick), NULL);
+    gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+
+    // Scissors
+    button = gtk_button_new_with_label ("Scissors");
+    g_signal_connect (button, "clicked", G_CALLBACK(pick), NULL);
+    gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+
+    // Game Status
+    //view = gtk_label_new(serverMess);
+    //gtk_box_pack_start (GTK_BOX (vbox), view, FALSE, TRUE, 0);
+    text = gtk_text_new (NULL, NULL);
+    //gtk_table_attach (GTK_TABLE (table), text, 0, 1, 0, 1,
+    //                GTK_EXPAND | GTK_SHRINK | GTK_FILL,
+    //                GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+
+    gtk_entry_set_text (GTK_ENTRY (text), serverMess);
+    gtk_text_set_editable (GTK_TEXT (text), FALSE);
+    //gtk_editable_insert_text (GTK_EDITABLE (text), serverMess, -1, 0);
+    //gtk_editable_select_region (GTK_EDITABLE (text),
+    //                            0, GTK_ENTRY (text)->text_length);
+    gtk_text_set_editable(GTK_TEXT(text), FALSE);
+    gtk_box_pack_start (GTK_BOX (vbox), text, TRUE, TRUE, 0);
+
+
     // Quit
-
-
+    button = gtk_button_new_with_label ("QUIT");
+    //g_signal_connect (button, "clicked", G_CALLBACK(ready), NULL);
+    g_signal_connect_swapped (button, "clicked",
+                            G_CALLBACK (gtk_widget_destroy), window);
+    gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
 
 
 
@@ -204,4 +161,61 @@ int main( int   argc,
     
     return 0;
 }
+
+
+static void pick ( GtkWidget *widget )
+{
+    if(inGame) {
+      strcpy(serverMess, "");
+      char c[15];// = gtk_button_get_label (GTK_BUTTON(widget));
+      strcpy(c, gtk_button_get_label (GTK_BUTTON(widget)) );
+      printf("%s\n", c );
+      write(sockfd, c, strlen(c)+1);
+      nread = read(sockfd, serverMess, buflen);
+
+      gtk_text_set_editable(GTK_TEXT(text), TRUE);
+      gtk_editable_insert_text (GTK_EDITABLE (text), serverMess, -1, 0);
+      //gtk_editable_select_region (GTK_EDITABLE (text),
+      //                            0, GTK_ENTRY (text)->text_length);
+      gtk_text_set_editable(GTK_TEXT(text), FALSE);
+    
+      inGame = TRUE;
+    }
+}
+
+
+
+void connectToServer(char *argv[])
+{
+    // Connecting to the server
+    getaddrinfo(argv[1], argv[2], NULL, &r);
+    sockfd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
+    result = connect(sockfd, r->ai_addr, r->ai_addrlen);
+    if(result == -1) {
+        printf("%s", "client: connect failed\n");
+        exit(1);
+    }
+    nread = read(sockfd, buffer, buflen);
+    printf("%s\n", buffer);
+    strcpy(playerNumStr, buffer);
+}
+
+void newWindow()
+{
+    // Create new window
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_size_request (GTK_WIDGET (window), 400, 200);
+    gtk_window_set_title (GTK_WINDOW (window), "DN Fun");
+    g_signal_connect (window, "destroy",
+                      G_CALLBACK (gtk_main_quit), NULL);
+    g_signal_connect_swapped (window, "delete-event",
+                              G_CALLBACK (gtk_widget_destroy),
+                              window);
+
+    vbox = gtk_vbox_new (FALSE, 0);
+    hbox = gtk_hbox_new (FALSE, 0);
+
+    gtk_container_add (GTK_CONTAINER (window), vbox);
+}
+
 
