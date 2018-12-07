@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     int nread, result;
 
     if(argc != 3) {
-       cerr << "syntax: slt_client server port" << endl;
+       cerr << "syntax: shout [server] [port]" << endl;
        exit(1);
     }
 
@@ -48,22 +48,22 @@ int main(int argc, char *argv[])
       
       cin>>outf;
     
-      ifstream inFile(inf);
-      ofstream outFile(outf);
+      ifstream inFile(inf.c_str());
+      ofstream outFile(outf.c_str());
 
       while(!inFile)
       {
         cout<<"Error opening input file "<< inf <<endl;
         cout<<"Please input another name: ";
         cin>>inf; 
-        inFile.open(inf);   
+        inFile.open(inf.c_str());   
       }
       while(!outFile)
       {
         cout<<"Error opening output file "<< outf <<endl;
         cout<<"Please input another name: ";
         cin>>outf;
-        outFile.open(outf);
+        outFile.open(outf.c_str());
       }
 
       while(getline(inFile, input))

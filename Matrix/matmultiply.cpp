@@ -7,7 +7,7 @@
 #include <math.h>     
 
 #define LIMIT 100
-#define THRD_NUM 10
+#define THRD_NUM 6
 
 using namespace std;
 
@@ -28,7 +28,6 @@ void printAll(float* a, float* b, float* c, int size);
 // Global variables
 int signal = 1;
 int counter = 0;
-int thread_ids[THRD_NUM] = { 0, 1, 2, 3, 4, 5 };
 pthread_mutex_t count_mutex;
 pthread_cond_t count_threshold_cv;
 
@@ -63,9 +62,6 @@ int main(int argc, char *argv[])
 
     float* c = new float[size*size];
 
-    pthread_mutex_init (&count_mutex, NULL);
-    pthread_cond_init (&count_threshold_cv, NULL);
-
     // run with a single or multiple thread
     if(choice == "m"){
       multM(a, b, c, size);
@@ -74,7 +70,7 @@ int main(int argc, char *argv[])
       multS(a, b, c, size);
     }
 
-   // printAll(a, b, c, size);
+  //  printAll(a, b, c, size);
 
     // delete the heap
     delete [] a; 
@@ -84,7 +80,6 @@ int main(int argc, char *argv[])
 }
 
 int at(int n, int r, int c) { return r*n+c; }
-int thread_num;
 
 void *mult(void *arguments)
 {
@@ -96,9 +91,13 @@ void *mult(void *arguments)
     int st = args->st;
     int end = args->end;
 
-    if (end = -1) end = size;
+    //cout<<"Inside+ ST: "<<st<<" END: "<<end<<endl;
 
-    for (int r = 0; r < size; r++) {
+    if (end == -1) end = size;
+
+    //cout<<"Inside- ST: "<<st<<" END: "<<end<<endl;
+    
+    for (int r = st; r < end; r++) {
         for (int c = 0; c < size; c++) {
             float num = 0;
             for (int k = 0; k < size; k++) {
@@ -110,7 +109,9 @@ void *mult(void *arguments)
     }
     
     signal--;
-    pthread_exit (NULL);
+    //pthread_exit (NULL);
+    //return;
+    //cout<<st<<" Gap "<<end-st<<endl;
 }
 
 void multS(float* A, float* B, float* C, int size)
@@ -129,27 +130,38 @@ void multS(float* A, float* B, float* C, int size)
     while(signal!=0) {}
 }
 
-void multM(float* A, float* B, float* C, int size) {
-    int thrd_num = min(size, THRD_NUM);
+void multM(float* A, float* B, float* C, int size)
+{
+    int minLines = 100;
+    int thrd_num = min(size/minLines + 1, THRD_NUM);
     int curr = 0;
     signal = 0;  
     pthread_t thrds[thrd_num];
-    int num_line = max(size/THRD_NUM, 50);
-    for (int t = 0; t < thrd_num ; t++) {
-        struct args_t args;
-        args.a = A;
-        args.b = B;
-        args.c = C;
-        args.size = size;
-        args.st = curr;
-	args.end = min(size, curr+num_line);
-        curr += num_line;
+    int num_line = max(size/THRD_NUM, minLines);
 
-        if(curr>=size) break;
-        signal++;
-        pthread_create (&thrds[t], NULL, &mult, &args);
-    }
-    while(signal!=0){}
+    struct args_t args[thrd_num];
+
+    pthread_attr_t attr;
+    pthread_attr_init (&attr);
+    pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+
+    for (int t = 0; t < thrd_num ; t++)
+    {
+      args[t].a = A;
+      args[t].b = B;
+      args[t].c = C;
+      args[t].size = size;
+      args[t].st = curr;
+      args[t].end = min(size, curr+num_line);
+      curr += num_line;
+      
+      //cout<<"++ "<<args[t].st<<" "<<args[t].end<<endl;
+  
+      signal++;
+      pthread_create (&thrds[t], &attr, &mult, &args[t]);
+      if(curr>=size) break;
+   }
+    while(signal!=0) {}
 
 }
 
