@@ -49,7 +49,7 @@ int main()
         e_error("socket");
     
     // Name the socket
-    result = bind(s_sfd, res->ai_addr, res->ai_addrlen);
+    result = ::bind(s_sfd, res->ai_addr, res->ai_addrlen);
     if(result == -1)
         e_error("bind");
     
