@@ -65,12 +65,11 @@ int main(int argc, char *argv[])
             if (input == "STOP")
             {
                 write(sockfd, input.c_str(), input.length()+1);
- 
+                
                 nread = read(sockfd, buffer, buflen);
                 if (nread > 10) {
                     cout<<buffer<<endl;
                 }
-                
                 cout << endl;
                 close(sockfd);
                 exit(0);

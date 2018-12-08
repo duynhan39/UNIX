@@ -77,11 +77,7 @@ int main()
     FD_ZERO(&readfds);
     FD_SET(s_sfd, &readfds);
     
-    //  Now wait for clients and requests.
-    //  Since we have passed a null pointer as the timeout
-    //  parameter, no timeout will occur.
-    //  The program will exit and report an error if select
-    //  returns a value of less than 1.  */
+    // Handle
     int picked = 0;
     int maxc = 4;
     int playerNum = 0;
@@ -184,7 +180,7 @@ int main()
                                         picked++;
                                     }
                                     else {
-					transform(input.begin(), input.end(), input.begin(), ::tolower);
+                                        transform(input.begin(), input.end(), input.begin(), ::tolower);
                                         userPicked[0] = input;
                                         picked++;
                                     }
@@ -203,7 +199,7 @@ int main()
                                         picked++;
                                     }
                                     else {
-					transform(input.begin(), input.end(), input.begin(), ::tolower);
+                                        transform(input.begin(), input.end(), input.begin(), ::tolower);
                                         userPicked[1] = input;
                                         picked++;
                                     }
@@ -234,20 +230,15 @@ int main()
                                 isStoping = false;
                                 picked = 0;
                             } else {
-
-//                                cout<<"Player 1: "<< userPicked[0] <<endl;
-//                                cout<<"Player 2: "<< userPicked[1] <<endl;
-
                                 int outcome = referee(userPicked[0], userPicked[1]);
                                 input = "Unknown";
                                 
                                 if(outcome == 0)
-				  {input = "Draw";}
+                                {input = "Draw";}
                                 else {
                                     input = "Player "+ to_string((3 - outcome)/2) +" wins!";
                                     score[(outcome+2)/2]++;
                                 }
-//                                cout<< "Output "<<input<<endl;
                                 write(playerId[0], input.c_str(), input.length()+1);
                                 write(playerId[1], input.c_str(), input.length()+1);
                             }
@@ -276,8 +267,8 @@ int referee(string w1, string w2) {
 
 void scoreBoard(int *score, int* ID, int &quiter, int &maxc, int &playerNum, bool *isReady, bool &isFirst) {
     string out = "Final Score\nPlayer 1: " + to_string(score[0])
-		+ "\nPlayer 2: "+ to_string(score[1])
-		+ "\n\nYou both did great,\nit's all about having fun!\n";
+    + "\nPlayer 2: "+ to_string(score[1])
+    + "\n\nYou both did great,\nit's all about having fun!\n";
     
     if(quiter == 3) {
         out = "\nGAME OVER!\n" + out;
