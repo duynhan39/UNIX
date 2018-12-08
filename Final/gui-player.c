@@ -62,14 +62,6 @@ static void pick ( GtkWidget *widget )
     }
 }
 
-static void quit ( GtkWidget *widget )
-{
-    if(inGame==1) {
-        stop();
-        gtk_main_quit();
-    }
-}
-
 static void stop ( GtkWidget *widget )
 {
     if(inGame==1) {
@@ -83,6 +75,15 @@ static void stop ( GtkWidget *widget )
         inGame++;
         close(sockfd);
     }
+}
+
+static void quit ( GtkWidget *widget )
+{
+   
+    if(inGame == 1)
+        stop(widget);
+      
+    gtk_main_quit();
 }
 
 void connectToServer(char *argv[]);
@@ -183,11 +184,7 @@ void newWindow()
     
     g_signal_connect (window, "destroy",
                       G_CALLBACK (quit), NULL);
-    //                      G_CALLBACK (gtk_main_quit), NULL);
-    //    g_signal_connect_swapped (window, "delete-event",
-    //                              G_CALLBACK (gtk_widget_destroy),
-    //                              window);
-    
+   
     vbox = gtk_vbox_new (FALSE, 0);
     hbox = gtk_hbox_new (FALSE, 0);
     gtk_container_add (GTK_CONTAINER (window), vbox);
