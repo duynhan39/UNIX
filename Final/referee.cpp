@@ -184,6 +184,7 @@ int main()
                                         picked++;
                                     }
                                     else {
+					transform(input.begin(), input.end(), input.begin(), ::tolower);
                                         userPicked[0] = input;
                                         picked++;
                                     }
@@ -202,6 +203,7 @@ int main()
                                         picked++;
                                     }
                                     else {
+					transform(input.begin(), input.end(), input.begin(), ::tolower);
                                         userPicked[1] = input;
                                         picked++;
                                     }
@@ -232,15 +234,20 @@ int main()
                                 isStoping = false;
                                 picked = 0;
                             } else {
+
+//                                cout<<"Player 1: "<< userPicked[0] <<endl;
+//                                cout<<"Player 2: "<< userPicked[1] <<endl;
+
                                 int outcome = referee(userPicked[0], userPicked[1]);
                                 input = "Unknown";
                                 
-                                if(outcome == 0) {input = "Draw";}
+                                if(outcome == 0)
+				  {input = "Draw";}
                                 else {
                                     input = "Player "+ to_string((3 - outcome)/2) +" wins!";
                                     score[(outcome+2)/2]++;
                                 }
-                                
+//                                cout<< "Output "<<input<<endl;
                                 write(playerId[0], input.c_str(), input.length()+1);
                                 write(playerId[1], input.c_str(), input.length()+1);
                             }
@@ -268,7 +275,9 @@ int referee(string w1, string w2) {
 }
 
 void scoreBoard(int *score, int* ID, int &quiter, int &maxc, int &playerNum, bool *isReady, bool &isFirst) {
-    string out = "Final Score\nPlayer 1: " + to_string(score[0]) + "\nPlayer 2: " + to_string(score[1]) + "\n\nYou both did great,\nit's all about having fun!";
+    string out = "Final Score\nPlayer 1: " + to_string(score[0])
+		+ "\nPlayer 2: "+ to_string(score[1])
+		+ "\n\nYou both did great,\nit's all about having fun!\n";
     
     if(quiter == 3) {
         out = "\nGAME OVER!\n" + out;
@@ -312,6 +321,7 @@ void scoreBoard(int *score, int* ID, int &quiter, int &maxc, int &playerNum, boo
     
     isReady[0] = isReady[1] = false;
     isFirst = true;
+    quiter = 0;
 }
 
 void e_error(const char *m)
