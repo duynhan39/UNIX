@@ -37,7 +37,7 @@ Now, everytime you want to play, just have to type
 ./game
 ```
 
-<img src="https://github.com/duynhan39/UNIX/blob/master/Dodge/Dodge.png" width="350">
+<img src="./Dodge.png" width="350">
 
 **Enjoy the game!**
 
