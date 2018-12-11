@@ -13,7 +13,7 @@
 
 char *server;
 char *port;
-int inGame=0;
+int inGame=-1;
 
 int sockfd;
 //int len;
@@ -30,10 +30,30 @@ GtkWidget *window;
 GtkWidget *vbox, *vbox2, *hbox;
 GtkWidget *button, *view;
 GtkWidget *text;     		// Displaying mess from server
+GtkWidget *entryS, *entryP;
+
+int connectToServer();
+void newWindow();
+
+static void enter_info( GtkWidget *widget )
+{
+    if(inGame == -1) {
+ 
+      server = gtk_entry_get_text (GTK_ENTRY (entryS));
+      printf ("Server: %s\n", server);
+
+      port = gtk_entry_get_text (GTK_ENTRY (entryP));
+      printf ("Port: %s\n", port);
+
+      inGame = connectToServer();
+
+      gtk_label_set_text(GTK_LABEL(view), playerNumStr);
+    }
+}
 
 static void ready( GtkWidget *widget )
 {  
-    if(!inGame) {
+    if(inGame == 0) {
         write(sockfd, "READY", 6);
         nread = read(sockfd, serverMess, bufflen);
         printf("%s\n", serverMess);
@@ -72,7 +92,7 @@ static void stop ( GtkWidget *widget )
         gtk_label_set_text(GTK_LABEL(text), serverMess);
         printf("%s\n\n", serverMess);
         
-        inGame++;
+        inGame = -1;
         close(sockfd);
     }
 }
@@ -86,49 +106,60 @@ static void quit ( GtkWidget *widget )
     gtk_main_quit();
 }
 
-void connectToServer(char *argv[]);
-void newWindow();
-
 int main( int argc, char *argv[] )
 {
     gtk_init (&argc, &argv);
-    char *info[2];
-    if(argc != 3) {
-        printf("%s","syntax: shout [server] [port]\n");
-        exit(1);
-    }
-    
-    //////////////////////
-    connectToServer(argv);
-    //////////////////////
+
     
     // Create new window
     newWindow();
+
     
     // Server
-    char mess[50] = "Server: ";
-    strcat(mess, argv[1]);
-    //printf("%s\n", mess);
+    hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+    char mess[50] = "Server:";
     view = gtk_label_new(mess);
-    gtk_box_pack_start (GTK_BOX (vbox), view, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox), view, TRUE, FALSE, 0);
+
+    entryS = gtk_entry_new_with_max_length(50);    
+    gtk_box_pack_start (GTK_BOX (hbox), entryS, TRUE, FALSE, 0); 
     
+
     // Port
-    strcpy(mess, "Port: ");
-    strcat(mess, argv[2]);
+    hbox = gtk_hbox_new (FALSE, 0); 
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+    strcpy(mess, "Port:");
     view = gtk_label_new(mess);
-    gtk_box_pack_start (GTK_BOX (vbox), view, FALSE,FALSE, 0);
-    
+    gtk_box_pack_start (GTK_BOX (hbox), view, TRUE, FALSE, 0);
+   
+    entryP = gtk_entry_new_with_max_length(50);
+    gtk_box_pack_start (GTK_BOX (hbox), entryP, TRUE, FALSE, 0);
+
+
+    // Connect
+    button = gtk_button_new_with_label ("Connect");
+    g_signal_connect (button, "clicked",
+                            G_CALLBACK (enter_info), NULL);
+    gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, TRUE, 0);
+
+ 
     // Player Number
     view = gtk_label_new(playerNumStr);
     gtk_box_pack_start (GTK_BOX (vbox), view, FALSE,FALSE, 0);
+
     
     // Ready
     button = gtk_button_new_with_label ("READY");
     g_signal_connect (button, "clicked", G_CALLBACK(ready), NULL);
     
     gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
+
     
     // Rock, Paper, Scissors
+    hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     int expanded = TRUE;
     int filled = FALSE;
@@ -141,38 +172,40 @@ int main( int argc, char *argv[] )
         g_signal_connect (button, "clicked", G_CALLBACK(pick), NULL);
         gtk_box_pack_start (GTK_BOX (vbox2), button, expanded, filled, 0);
     }
+
     
     // Quit
-    button = gtk_button_new_with_label ("QUIT");
-    g_signal_connect (button, "clicked", G_CALLBACK(stop), NULL);
-    
+    button = gtk_button_new_with_label ("STOP");
+    g_signal_connect (button, "clicked", G_CALLBACK(stop), NULL);    
     gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
+
     
     // Game Status
     text = gtk_label_new(serverMess);
     gtk_box_pack_start (GTK_BOX (vbox), text, TRUE, FALSE, 0);
     
+
     // Show to screen
-    gtk_widget_show_all (window);
-    
+    gtk_widget_show_all (window);    
     gtk_main();
     
     return 0;
 }
 
-void connectToServer(char *argv[])
+int connectToServer()
 {
     // Connecting to the server
-    getaddrinfo(argv[1], argv[2], NULL, &r);
+    getaddrinfo(server, port, NULL, &r);
     sockfd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
     result = connect(sockfd, r->ai_addr, r->ai_addrlen);
     if(result == -1) {
         printf("%s", "client: connect failed\n");
-        exit(1);
+	return -1;
     }
     nread = read(sockfd, buffer, bufflen);
     printf("%s\n", buffer);
     strcpy(playerNumStr, buffer);
+    return 0;
 }
 
 void newWindow()
@@ -186,7 +219,6 @@ void newWindow()
                       G_CALLBACK (quit), NULL);
    
     vbox = gtk_vbox_new (FALSE, 0);
-    hbox = gtk_hbox_new (FALSE, 0);
     gtk_container_add (GTK_CONTAINER (window), vbox);
 }
 

@@ -10,12 +10,14 @@
 * You will only find out about the score once it's over
 
 ## GUI
-* Become a player by `./gui-player [server] [port id]`
+* Become a player by `./gui-player`
+* Enter server name or number and port number
 * Before both player hit `READY` button, all other buttons are unavailable
 * Once in the game, `READY` will not be available
 * You can pick one of the 3 moves or `QUIT`
 * It is strongly recommended **not to close the window before the `READY` stage**
 * You will only find out about the score once it's over
+* To end the game, hit STOP and then either connect again or close the program
 
 
 ## Have fun!
