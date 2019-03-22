@@ -43,7 +43,7 @@ Now, everytime you want to play, just have to type
 ### PC mode
 <img src="./pcmode.png" width="350">
 
-### Dual Player Mode
+### Dual Players Mode
 <img src="./duelplayermode.png" width="350">
 
 
