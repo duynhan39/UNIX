@@ -37,16 +37,16 @@ Now, everytime you want to play, just have to type
 ./game
 ```
 
-<div style="text-align:center">
- <img src="./Dodge.png" width="350">
- #
- <img src="./num.png" width="350">
- #
- <img src="./pcmode.png" width="350">
- #
- <img src="./duelplayermode.png" width="350">
+### Dodge
+<img src="./Dodge.png" width="350">
 
-</div>
+### PC mode
+<img src="./pcmode.png" width="350">
+
+### Dual Player Mode
+<img src="./duelplayermode.png" width="350">
+
+
 
 
 
