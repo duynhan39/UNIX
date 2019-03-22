@@ -118,7 +118,7 @@ void greet()
     }
     
     // Waiting for user to read the title
-    usleep(SLIDE_SP);
+    usleep(SLIDE_SP*10);
     
     // Moving the name down along with the borders
     for(int y=0; y<=LINES/2-1; y++)

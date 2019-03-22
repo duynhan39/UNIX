@@ -2,22 +2,22 @@
 #define NHAN
 
 #include <curses.h>
-#include <unistd.h>   // sleep
+#include <unistd.h>     // sleep
 #include <string.h>
 #include <iostream>
-#include <stdlib.h>   // random
-#include <time.h>     // time
+#include <stdlib.h>     // random
+#include <time.h>       // time
 #include <ctime>
 #include <ratio>
-#include <chrono>     // millisecond
-#include <algorithm>  // min/max
+#include <chrono>       // millisecond
+#include <algorithm>    // min/max
 #include <queue>
 #include <vector>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <gdbm.h>
+#include <gdbm.h>       // Database
 
 using namespace std;
 
